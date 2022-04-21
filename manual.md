@@ -2539,7 +2539,6 @@ http://localhost:3211/
 在终端执行前，请先给文件加可执行权限：
 
 ```shell
-chmod +x ./go-cqhttp/go-cqhttp
 chmod +x ./sealdice-core
 ```
 
@@ -2609,14 +2608,21 @@ P.S. 如果你有自己的onebot服务端，请将其设为WS主动连接模式�
 2. 复制这句话，粘贴后回车执行：
 
    curl https://dice.weizaima.com/s/ph.sh | bash
-
    如下图：
 
-   <img src="static/manual.assets/image-20220422001044592.png" alt="image-20220422001044592" style="zoom:33%;" /><img src="static/manual.assets/image-20220422001559048.png" alt="image-20220422001559048" style="zoom:33%;" />
+   <img src="static/manual.assets/image-20220422001044592.jpg" alt="image-20220422001044592"/>
+
+   回车后看到一堆文本，碍于篇幅就不放上来了。
+
+   如果正确运行，最后一句话应该是：
+
+   **=> http server started on [::]:3221**
+
+   
 
 3. 手机浏览器访问 127.0.0.1:3211
 
-   <img src="static/manual.assets/image-20220422001621710.png" alt="image-20220422001621710" style="zoom:33%;" />
+   <img src="static/manual.assets/image-20220422001621710.jpg" alt="image-20220422001621710"  />
 
 
 
