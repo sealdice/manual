@@ -57,11 +57,13 @@
 
 
 
-本手册适用于1.0.0stable版本
+本手册适用于1.0.1及以上版本
 
-最后更新: 2022-08-11
+最后更新: 2022-08-24
 
 手册使用: [CC BY-NC-SA 4.0协议](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+源码地址: https://github.com/sealdice/manual
 
 
 
@@ -126,7 +128,7 @@ Dice: 由于高于50就打扫卫生，<木落>掷出了 d100=[1d100=90]=90
 
 参见[特色功能](#特色功能)一节
 
-对于跑团用户，请重点关注 [角色卡指令，即ch的区别](#.ch 角色卡管理)
+对于跑团用户，请重点关注 [角色卡指令，即pc的区别](#.pc 角色卡管理)
 
 
 
@@ -194,7 +196,7 @@ sudo iptables -I INPUT -s 0.0.0.0/0 -p tcp --dport 3211  -j ACCEPT
 
    去这里下载socks5-tool工具，到国内服务器上运行
 
-   https://sealdice.coding.net/public/sealdice/sealdice-tools/git/files
+   https://github.com/sealdice/sealdice-tools
 
    在手机上使用你们熟悉的工具连接服务器，单次连接只持续15分钟。请尽快完成登录。
 
@@ -3281,6 +3283,8 @@ chmod +x ./sealdice-core
 
 如果你是Mac系统，需要在终端运行SealDice。
 
+**注意：如果你是M1或更新的Apple Silicon芯片，那么需要安装Rosetta并使用x64版本**
+
 首先，下载并解压海豹，并在有sealdice-core文件的目录下，右键“**新建位于文件夹位置的终端窗口**”，随后执行下面两条指令。
 
 如果没有这个选项，参考 https://www.cnblogs.com/huangshiyu13/p/14101284.html 进行设置。
@@ -3380,6 +3384,12 @@ P.S. 如果你有自己的onebot服务端，请将其设为WS主动连接模式�
 
 
 
+欢迎PR:
+
+https://github.com/sealdice/manual
+
+
+
 ### 牌堆
 
 待编写
@@ -3401,6 +3411,8 @@ P.S. 如果你有自己的onebot服务端，请将其设为WS主动连接模式�
 ### JS脚本
 
 待编写
+
+
 
 
 
@@ -3489,6 +3501,8 @@ find . -type d | xargs chmod 755
 由于Golang的高效，海豹核心只占用大概40MB内存，以及极少的CPU资源。
 
 自带的《COC7怪物之锤》和《DND系列资料》会另外占用50-70MB内存，但能提供极为强大的资料查询功能。
+
+因此总计的初始内存大概在90MB左右。其中有一部分其实是空闲内存，因为go运行时的特性并不立即还给操作系统。
 
 
 
