@@ -57,13 +57,19 @@
 
 
 
+### 手册信息
+
 本手册适用于1.0.2及以上版本
 
-最后更新: 2023-01-10
+最后更新: 2023-02-02
 
 手册使用: [CC BY-NC-SA 4.0协议](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 源码地址: https://github.com/sealdice/manual
+
+手册由制作组以及网友共同编写。其中难免错漏以及不实之处，或随版本更迭过时之处，欢迎在源码地址提交issue指出。或提交PR来补充手册内容，非常感谢！
+
+
 
 
 
@@ -3362,7 +3368,7 @@ http://localhost:3211/
 * 部署第二只海豹时，仍需要手动部署
 
 ```bash
-curl https://sealdice.com/s/linux.sh | bash
+curl -L https://sealdice.com/s/linux.sh | bash
 ```
 
 如果一切正常，执行结果如下：
@@ -3400,6 +3406,16 @@ chmod +x ./sealdice-core
 如果你是Mac系统，需要在终端运行SealDice。
 
 **注意：如果你是M1或更新的Apple Silicon芯片，那么需要安装Rosetta并使用x64版本**
+
+
+
+```
+# P.S. 目前有一个测试中的新方案，macOS一键安装！但是注意，此方案是群友编写，开发者并无硬件进行测试。
+# 打开终端(terminal)，在其中粘贴，回车运行:
+curl -L https://sealdice.com/s/darwin.sh | bash
+```
+
+
 
 首先，下载并解压海豹，并在有sealdice-core文件的目录下，右键“**新建位于文件夹位置的终端窗口**”，随后执行下面两条指令。
 
@@ -3477,7 +3493,7 @@ P.S. 如果你有自己的onebot服务端，请将其设为WS主动连接模式�
 
 2. 复制这句话，粘贴后回车执行：
 
-   curl https://sealdice.com/s/ph.sh | bash
+   curl -L https://sealdice.com/s/ph.sh | bash
    如下图：
 
    <img src="static/manual.assets/image-20220422001044592.jpg" alt="image-20220422001044592"/>
@@ -3500,19 +3516,19 @@ P.S. 如果你有自己的onebot服务端，请将其设为WS主动连接模式�
 
 
 
-欢迎PR:
-
-https://github.com/sealdice/manual
-
-
-
 ### 牌堆
+
+仓库：https://github.com/sealdice/draw
 
 待编写
 
 
 
 ### 自定义回复
+
+仓库：https://github.com/sealdice/reply
+
+
 
 #### 0.如何优雅的偷懒
 `.text`将是你的一大助力。他会输出他后面的执行结果，这和自定义回复中的“回复”长得一模一样，因此你不必新建回复，设置触发，最后不厌其烦地输入触发词。你可以将他看成不需要触发词的自定义回复。
