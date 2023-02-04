@@ -55,7 +55,7 @@
 
 [已知支持规则](#TRPG规则支持列表)
 
-
+### 手册信息
 
 本手册适用于1.0.2及以上版本
 
@@ -3488,7 +3488,7 @@ P.S. 如果你有自己的onebot服务端，请将其设为WS主动连接模式�
 
 2. 复制这句话，粘贴后回车执行：
 
-   curl - https://sealdice.com/s/ph.sh | bash
+   curl -L https://sealdice.com/s/ph.sh | bash
    如下图：
 
    <img src="static/manual.assets/image-20220422001044592.jpg" alt="image-20220422001044592"/>
