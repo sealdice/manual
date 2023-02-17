@@ -4686,6 +4686,62 @@ seal.coc.registerRule(rule);
 
 ```
 
+#### 使用TS模板
+
+##### clone或下载项目
+
+推荐的流程：
+
+1. 在[模板项目仓库](https://github.com/sealdice/sealdice-js-ext-template)点击“Use this template”按钮，使用该模板在自己的github上创建一个扩展的仓库，并设置为自己的扩展的名字
+2. `git clone`到本地，进行开发
+
+如果你没有github账号，也不会用git：
+
+1. 在[模板项目仓库](https://github.com/sealdice/sealdice-js-ext-template)点击“Code”按钮，在出现的浮窗中选择“Download ZIP”，这样就会下载一个压缩包
+2. 解压后进行开发
+
+##### 编译项目
+
+NPM是一种javascript的包管理工具，可以管理项目使用的依赖包。
+
+一开始，需要先将所需依赖包安装好，在命令行使用如下命令：
+
+```bash
+npm install
+```
+
+当你写好了代码，需要将ts文件转换为js文件以便上传到海豹骰时，在命令行使用如下命令：
+
+```bash
+npm run build
+```
+
+编译成功的js文件在dist目录下，默认的名字是`sealdce-js-ext.js`。
+
+##### 填写个人信息
+
+当插件开发完成后(或者开始开发时)，你需要修改几处地方：
+
+- header.txt 这个文件是你插件的描述信息
+- tools/build-config.js 最开头一行"var filename = 'sealdce-js-ext.js';"，改成你中意的名字，注意不要与现有的重名
+
+##### 目录结构
+
+只列出其中主要的一些文件
+
+- src
+  - `index.ts`：你的扩展的代码就写在这个文件里
+- tools
+  - `build-config`：一些编译的配置，影响`index.ts`编译成js文件的方式
+  - `build.js`：在命令`npm run build`执行时所运行的脚本，用于读取`build-config`并按照配置进行编译
+- types
+  - `seal.d.ts`：类型文件，海豹核心提供的扩展API
+- `header.txt`：扩展头信息，会在编译时自动加到目标文件头部
+- `package.json`：命令`npm install`时就在安装这个文件里面所指示的依赖包
+- `tsconfig.json`：typescript的配置
+
+
+
 #### JS扩展API
 
 ```ts
