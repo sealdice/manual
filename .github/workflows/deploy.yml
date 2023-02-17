@@ -28,10 +28,7 @@ jobs:
       - uses: ZacJW/markdown-html-action@1.1.0
         with:
           input_files: '[["SealDice*.md"]]'
-          output_files: '["SealDice 指令手册.html"]'
-          builtin_stylesheet: 'style.css'
-          packages: 'pymdown-extensions'
-          extensions: '["pymdownx.extra"]'
+          output_files: '["html/SealDice 指令手册.html"]'
           
   html_dir_to_gh-pages:
     runs-on: ubuntu-latest
@@ -44,4 +41,4 @@ jobs:
         uses: uibcdf/action-html-dir-to-gh-pages@v1.0.0
         with:
           branch: master
-          html_dir: ./
+          html_dir: html
