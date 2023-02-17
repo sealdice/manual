@@ -3927,6 +3927,8 @@ vscode相比于记事本的优势：
 
 （顺便一提，和海豹合作的跑团replay视频制作软件[回声工坊](https://github.com/DanDDXuanX/TRPG-Replay-Generator)也主要使用vscode作为log编辑工具，拥有vscode扩展支持。使用vscode说不定以后也会有相应的辅助扩展来帮忙在写JS扩展时偷懒）
 
+（已经有了，名为[Sealdice Snippets](https://marketplace.visualstudio.com/items?itemName=yxChangingSelf.sealdice-snippets)，在vscode的扩展商店就能找到并直接安装，提供了一些常见代码片段，可以快速生成模板代码）
+
 #### 1.创建一个JS扩展
 
 你可以选择使用JavaScript或者Typescript来作为你的编写语言。
@@ -5307,7 +5309,7 @@ halt
 
 ## 关于
 
-### 手册贡献者
+### [手册贡献者](https://github.com/sealdice/manual/graphs/contributors)
 
 木落
 
@@ -5319,8 +5321,7 @@ halt
 
 流溪
 
-憧憬少
-
+[憧憬少](https://github.com/ChangingSelf)
 
 
 
