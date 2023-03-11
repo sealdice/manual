@@ -4834,7 +4834,29 @@ npm run build
 - `package.json`：命令`npm install`时就在安装这个文件里面所指示的依赖包
 - `tsconfig.json`：typescript的配置
 
+#### 补充：使用非指令关键词  
+你是否因为自定义回复能实现的功能有限而烦恼？你是否因为自定义回复的匹配方式不全而愤怒？你是否因为自定义回复只能调用图片api而感到焦头烂额？不要紧张，我的朋友，试试非指令关键词，这会非常有用。  
 
+通常情况下，我们使用`ext.onNotCommandReceived`作为非指令关键词的标志；这限定了只有在未收到命令且未达成自定义回复时，海豹才会触发此流程。  
+
+一个完整的非指令关键词模板如下：  
+
+```javascript
+//必要流程，注册扩展，注意即使是非指令关键词也是依附于扩展的  
+if (!seal.ext.find('xxx')){    
+    ext = seal.ext.new('xxx','xxx','x.x.x');    
+    seal.ext.register(ext); 
+    //这里其实是编写处理函数     
+    ext.onNotCommandReceived = (ctx, msg) => {    
+        let message = msg.message;  
+        //这里请自己处理要如何达成message的匹配条件，js那么多的匹配方法，足够你玩出花来。  
+        if(xxx){
+          //匹配到关键词了，要干什么？  
+          xxx;
+        }
+    }
+}
+```
 
 #### JS扩展API
 
