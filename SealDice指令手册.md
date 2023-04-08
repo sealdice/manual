@@ -4853,236 +4853,372 @@ if (!seal.ext.find('xxx')){
 ```
 
 #### JS扩展API
+> 这里只是粗略的整理，具体请看[jsvm源码](https://github.com/sealdice/sealdice-core/blob/master/dice/dice_jsvm.go)。
 
-```ts
-declare namespace seal {
-  /** 信息上下文 */
-  export interface MsgContext {
-    /** 当前群信息 */
-    group: GroupInfo;
-    /** 当前群的玩家数据 */
-    player: GroupPlayerInfo;
-    /** 当前群内是否启用bot（注:强制@时这个值也是true，此项是给特殊指令用的） */
-    isCurGroupBotOn: boolean;
-    /** 是否私聊 */
-    isPrivate: boolean;
-    /** 权限等级 40邀请者 50管理 60群主 100master */
-    privilegeLevel: number;
-  }
+按类别整理。
 
-  /** 群信息 */
-  export interface GroupInfo {
-    active: boolean;
-    groupId: string;
-    groupName: string;
-    /** COC规则序号 */
-    cocRuleIndex: number;
-    /** 当前log名字，若未开启为空 */
-    logCurName: string;
-    /** 当前log是否开启 */
-    logOn: boolean;
-    /** 是否显示入群迎新信息 */
-    showGroupWelcome: boolean;
-    /** 入群迎新文本 */
-    groupWelcomeMessage: string;
-    /** 最后指令时间(时间戳) */
-    recentCommandTime: number;
-    /** 入群时间(时间戳) */
-    enteredTime: number;
-    /** 邀请人ID */
-    inviteUserId: string;
-  }
+> 其中ctx为信息的MsgContext，msg为信息的Message，一般会在定义指令函数时就声明，如:
 
-  /** 群内玩家数据 */
-  export interface GroupPlayerInfo {
-    /** 用户昵称 */
-    name: string;
-    /** 用户ID */
-    userId: string;
-    /** 上次执行指令时间 */
-    lastCommandTime: number;
-    /** 上次发送指令时间(即sn) */
-    autoSetNameTemplate: string;
-  }
-
-  /** 消息详情 */
-  export interface Message {
-    /** 当前平台，如QQ */
-    platform: string;
-    /** 消息内容 */
-    message: string;
-    /** 发送时间 */
-    time: number;
-    /** 群消息/私聊消息 */
-    messageType: 'group' | 'private';
-    /** 群ID */
-    groupId: string;
-    /** 发送者信息 */
-    sender: Sender;
-    /** 原始ID，用于撤回等情况 */
-    rawId: string | number;
-  }
-
-  /** 发送者信息 */
-  export interface Sender {
-    nickname: string;
-    userId: string;
-  }
-
-  export interface AtInfo {
-    userId: string;
-  }
-
-  export interface Kwarg {
-    /** 名称 */
-    name: string;
-    /** 是否存在value */
-    valueExists: boolean;
-    /** value的值 */
-    value: string;
-    /** 将value转换为bool，如'0' ''等会自动转为false */
-    asBool: boolean;
-  }
-
-  export interface CmdArgs {
-    /** 当前命令，与指令的name相对，例如.ra时，command为ra */
-    command: string;
-    /** 指令参数，如“.ra 力量 测试”时，参数1为“力量”，参数2为“测试” */
-    args: string[];
-    /** 当前被at的有哪些 */
-    at: AtInfo[];
-    /** 参数的原始文本 */
-    rawArgs: string;
-    /** 我被at了 */
-    amIBeMentioned: boolean;
-    /** 同上，但要求是第一个被at的 */
-    amIBeMentionedFirst: boolean;
-    /** 一种格式化后的参数，也就是中间所有分隔符都用一个空格替代 */
-    cleanArgs: string;
-    // 暂不提供，未来可能有变化
-    // specialExecuteTimes: number;
-
-    /** 获取关键字参数，如“.ra 50 --key=20 --asm”时，有两个kwarg，一个叫key，一个叫asm */
-    getKwargs(key: string): Kwarg;
-    /** 获取第N个参数，从1开始，如“.ra 力量50 推门” 参数1为“力量50”，参数2是“推门” */
-    getArgN(n: number): string;
-  }
-
-
-  interface CmdItemInfo {
-    solve: (ctx: MsgContext, msg: Message, cmdArgs: CmdArgs) => CmdExecuteResult;
-
-    /** 指令名称 */
-    name: string;
-    /** 长帮助，带换行的较详细说明  */
-    help: string;
-    /** 允许代骰 */
-    allowDelegate: boolean;
-    /** 私聊不可用 */
-    disabledInPrivate: boolean;
-
-    /** 高级模式。默认模式下行为是：需要在当前群/私聊开启，或@自己时生效(需要为第一个@目标)。一般不建议使用 */
-    // raw: boolean;
-    /** 是否检查当前可用状况，包括群内可用和是私聊两种方式，如失败不进入solve */
-    // checkCurrentBotOn: boolean;
-    /** 是否检查@了别的骰子，如失败不进入solve */
-    // checkMentionOthers: boolean;
-  }
-
-  interface ExtInfo {
-    /** 名字 */
-    name: string;
-    /** 版本 */
-    version: string;
-    /** 名字 */
-    author: string;
-    /** 指令映射 */
-    cmdMap: { [key: string]: CmdItemInfo };
-    /** 存放数据 */
-    storageSet(key: string, value: string);
-    /** 取数据 */
-    storageGet(key: string): string;
-  }
-
-  interface CmdExecuteResult {
-    /** 是否顺利完成执行 */
-    solved: boolean;
-    /** 是否返回帮助信息 */
-    showHelp: boolean;
-  }
-
-  export const ext: {
-    /**
-     * 
-     */
-    new: (name: string, author: string, version: string) => ExtInfo;
-
-    /**
-     * 创建指令结果对象
-     * @param success 是否执行成功 
-     */
-    newCmdExecuteResult(success: boolean): CmdExecuteResult;
-
-    /**
-     * 注册一个扩展
-     * @param ext 
-     */
-    register(ext: ExtInfo): unknown;
-
-    /**
-     * 按名字查找扩展对象
-     * @param name 
-     */
-    find(name: string): ExtInfo;
-
-    newCmdItemInfo(): CmdItemInfo;
-  }
-
-  interface CocRuleInfo {
-    /** 序号 */
-    index: number;
-    /** .setcoc key */
-    key: string;
-    /** 已切换至规则 Name: Desc */
-    name: string;
-    /** 规则描述 */
-    desc: string;
-
-    /**
-     * 检定函数
-     * @param ctx 上下文对象
-     * @param d100 使用骰子骰出的值
-     * @param checkValue 检定线，对应属性，例如力量、敏捷等
-     */
-    check(ctx: MsgContext, d100: number, checkValue: number): CocRuleCheckRet;
-  }
-
-  interface CocRuleCheckRet {
-    /** 成功级别，失败小于0，成功大于0。大失败-2 失败-1 成功1 困难成功2 极难成功3 大成功4 */
-    successRank: number;
-    /** 大成功数值 */
-    criticalSuccessValue: number;
-  }
-
-  export const coc: {
-    newRule(): CocRuleInfo;
-    newRuleCheckResult(): CocRuleCheckRet;
-    registerRule(rule: CocRuleInfo): boolean;
-  }
-
-  /** 代骰模式下，获取被代理人信息 */
-  export function getCtxProxyFirst(ctx: MsgContext, msg: Message): MsgContext;
-  /** 回复发送者(发送者私聊即私聊回复，群内即群内回复) */
-  export function replyToSender(ctx: MsgContext, msg: Message, text: string): void;
-}
-
+```javascript
+cmd.solve = (ctx,msg,cmdArgs) => {
+    somefunction;
+} 
 ```
 
+下面是部分api的说明（不完全版）：
 
+```javascript
+//被注释掉的是可以提供的，但是在源码中被注释。  
+//seal.setVarInt(ctx, `$XXX`, valueToSet) //`$XXX`即rollvm（初阶豹语）中的变量，其会将$XXX的值设定为int类型的valueToSet。  
+//seal.setVarStr(ctx, `$XXX`, valueToSet) //同上，区别是设定的为str类型的valueToSet。  
+seal.replyGroup(ctx, msg, something) //向收到指令的群中发送something。  
+seal.replyPerson(ctx, msg, something) //顾名思义，类似暗骰，向指令触发者（若为好友）私信something。  
+seal.replyToSender(ctx, msg, something) //同上，区别是群内收到就群内发送，私聊收到就私聊发送。  
+seal.memberBan(ctx, groupID, userID, dur) //将指定群的指定用户封禁指定时间(似乎只实现了walleq协议?)
+seal.memberKick(ctx, groupID, userID)  //将指定群的指定用户踢出(似乎也只实现了walleq协议?)
+seal.format(ctx, something) //将something经过一层rollvm转译并返回，注意需要配合replyToSender才能发送给触发者！  
+seal.formatTmpl(ctx, something) //调用自定义文案something  
+seal.getCtxProxyFirst(ctx, cmdArgs)  //获取被at的第一个人, 等价于getCtxProxyAtPos(ctx, 0)  
+seal.vars.intGet(ctx, `$XXX`) //返回int类型的触发者的该变量的值（之所以会有这么奇怪的说法是因为rollvm的“个人变量”机制）。  
+seal.vars.intSet(ctx, `$XXX`, valueToSet) //`$XXX`即rollvm（初阶豹语）中的变量，其会将$XXX的值设定为int类型的valueToSet。  
+seal.vars.strGet(ctx, `$XXX`) //返回str类型的触发者的该变量的值（之所以会有这么奇怪的说法是因为rollvm的“个人变量”机制。  
+seal.vars.strSet(ctx, `$XXX`, valueToSet) //`$XXX`即rollvm（初阶豹语）中的变量，其会将$XXX的值设定为str类型的valueToSet。  
+//seal.vars.varSet(ctx, `$XXX`, valueToSet) //可能是根据数据类型自动推断int或str？
+//seal.vars.varGet(ctx, `$XXX`) //同上
+seal.ext.newCmdItemInfo() //用来定义新的指令；没有参数，个人觉得可以视其为类（class）。  
+seal.ext.newCmdExecuteResult(bool) //用于判断指令执行结果，true为成功，false为失败。  
+seal.ext.new(extName, extAuthor, Version) //用于建立一个名为extName，作者为extAurhot，版本为Version的扩展。注意，extName， extAuthor和Version均为字符串。  
+seal.ext.find(extName) //用于查找名为extname的扩展，若存在则返回true，否则返回false。  
+seal.ext.register(newExt) //将扩展newExt注册到系统中。注意newExt是seal.ext.new的返回值，将register视为new是错误的。  
+seal.coc.newRule() //用来创建自定义coc规则，github.com/sealdice/javascript/examples中已有详细例子，不多赘述。  
+seal.coc.newRuleCheckResult() //同上，不多赘述。  
+seal.coc.registerRule(rule) //同上，不多赘述。  
+seal.deck.draw(ctx, deckname, isShuffle) //他会返回一个抽取牌堆的结果。这里有些复杂：deckname为需要抽取的牌堆名，而isShuffle则是一个布尔值，它决定是否放回抽取；false为放回，true为不放回。  
+seal.deck.reload() //重新加载牌堆。  
+//下面是1.2新增api  
+seal.newMessage() //返回一个空白的Message对象, 结构与收到消息的msg相同
+seal.createTempCtx(endpoint, msg) // 制作一个ctx, 需要msg.MessageType和msg.Sender.UserId
+seal.applyPlayerGroupCardByTemplate(ctx, tmpl) // 设定当前ctx玩家的自动名片格式
+seal.gameSystem.newTemplate(string) //从json解析新的游戏规则。  
+seal.gameSystem.newTemplateByYaml(string) //从yaml解析新的游戏规则。 
+seal.getCtxProxyAtPos(ctx, pos) //获取第pos个被at的人, pos从0开始计数 
+seal.atob(base64String) //返回被解码的base64编码  
+seal.btoa(string) //将string编码为base64并返回
+```
 
+下面是dice_jsvm.go的一些关于js api的内容：
 
+```go
+// 初始化
+loop.Run(func(vm *goja.Runtime) {
+    vm.SetFieldNameMapper(goja.TagFieldNameMapper("jsbind", true))
 
+    // console 模块
+    console.Enable(vm)
 
+    // require 模块
+    d.JsRequire = reg.Enable(vm)
+
+    seal := vm.NewObject()
+    //seal.Set("setVarInt", VarSetValueInt64)
+    //seal.Set("setVarStr", VarSetValueStr)
+
+    vars := vm.NewObject()
+    _ = seal.Set("vars", vars)
+    //vars.Set("varGet", VarGetValue)
+    //vars.Set("varSet", VarSetValue)
+    _ = vars.Set("intGet", VarGetValueInt64)
+    _ = vars.Set("intSet", VarSetValueInt64)
+    _ = vars.Set("strGet", VarGetValueStr)
+    _ = vars.Set("strSet", VarSetValueStr)
+
+    ext := vm.NewObject()
+    _ = seal.Set("ext", ext)
+    _ = ext.Set("newCmdItemInfo", func() *CmdItemInfo {
+        return &CmdItemInfo{IsJsSolveFunc: true}
+        })
+    _ = ext.Set("newCmdExecuteResult", func(solved bool) CmdExecuteResult {
+        return CmdExecuteResult{
+            Matched: true,
+            Solved:  solved,
+            }
+    })
+    _ = ext.Set("new", func(name, author, version string) *ExtInfo {
+        return &ExtInfo{Name: name, Author: author, Version: version,
+            GetDescText: func(i *ExtInfo) string {
+                return GetExtensionDesc(i)
+                },
+            AutoActive: true,
+            IsJsExt:    true,
+            Brief:      "一个JS自定义扩展",
+            CmdMap:     CmdMapCls{},
+        }
+    })
+    _ = ext.Set("find", func(name string) *ExtInfo {
+        return d.ExtFind(name)
+    })
+    _ = ext.Set("register", func(ei *ExtInfo) {
+        if d.ExtFind(ei.Name) != nil {
+            panic("扩展<" + ei.Name + ">已被注册")
+        }
+
+        d.RegisterExtension(ei)
+        if ei.OnLoad != nil {
+            ei.OnLoad()
+        }
+        d.ApplyExtDefaultSettings()
+        for _, i := range d.ImSession.ServiceAtNew {
+            i.ExtActive(ei)
+        }
+    })
+
+        // COC规则自定义
+    coc := vm.NewObject()
+    _ = coc.Set("newRule", func() *CocRuleInfo {
+        return &CocRuleInfo{}
+    })
+    _ = coc.Set("newRuleCheckResult", func() *CocRuleCheckRet {
+        return &CocRuleCheckRet{}
+    })
+    _ = coc.Set("registerRule", func(rule *CocRuleInfo) bool {
+        return d.CocExtraRulesAdd(rule)
+    })
+    _ = seal.Set("coc", coc)
+
+    deck := vm.NewObject()
+    _ = deck.Set("draw", func(ctx *MsgContext, deckName string, isShuffle bool) map[string]interface{} {
+        exists, result, err := deckDraw(ctx, deckName, isShuffle)
+        var errText string
+        if err != nil {
+            errText = err.Error()
+        }
+        return map[string]interface{}{
+            "exists": exists,
+            "err":    errText,
+            "result": result,
+        }
+    })
+    _ = deck.Set("reload", func() {
+        DeckReload(d)
+    })
+    _ = seal.Set("deck", deck)
+
+    _ = seal.Set("replyGroup", ReplyGroup)
+    _ = seal.Set("replyPerson", ReplyPerson)
+    _ = seal.Set("replyToSender", ReplyToSender)
+    _ = seal.Set("memberBan", MemberBan)
+    _ = seal.Set("memberKick", MemberKick)
+    _ = seal.Set("format", DiceFormat)
+    _ = seal.Set("formatTmpl", DiceFormatTmpl)
+    _ = seal.Set("getCtxProxyFirst", GetCtxProxyFirst)
+
+    // 1.2新增
+    _ = seal.Set("newMessage", func() *Message {
+        return &Message{}
+    })
+    _ = seal.Set("createTempCtx", CreateTempCtx)
+    _ = seal.Set("applyPlayerGroupCardByTemplate", func(ctx *MsgContext, tmpl string) string {
+        if tmpl != "" {
+            ctx.Player.AutoSetNameTemplate = tmpl
+        }
+        if ctx.Player.AutoSetNameTemplate != "" {
+            text, _ := SetPlayerGroupCardByTemplate(ctx, ctx.Player.AutoSetNameTemplate)
+            return text
+        }
+        return ""
+    })
+    gameSystem := vm.NewObject()
+    _ = gameSystem.Set("newTemplate", func(data string) error {
+        tmpl := &GameSystemTemplate{}
+        err := json.Unmarshal([]byte(data), tmpl)
+        if err != nil {
+            return errors.New("解析失败:" + err.Error())
+        }
+        ret := d.GameSystemTemplateAdd(tmpl)
+        if !ret {
+            return errors.New("已存在同名模板")
+        }
+        return nil
+        })
+    _ = gameSystem.Set("newTemplateByYaml", func(data string) error {
+        tmpl := &GameSystemTemplate{}
+        err := yaml.Unmarshal([]byte(data), tmpl)
+        if err != nil {
+            return errors.New("解析失败:" + err.Error())
+        }
+        ret := d.GameSystemTemplateAdd(tmpl)
+        if !ret {
+            return errors.New("已存在同名模板")
+        }
+        return nil
+    })
+    _ = seal.Set("gameSystem", gameSystem)
+    _ = seal.Set("getCtxProxyAtPos", GetCtxProxyAtPos)
+
+    _ = vm.Set("atob", func(s string) (string, error) {
+        // Remove data URI scheme and any whitespace from the string.
+        s = strings.Replace(s, "data:text/plain;base64,", "", -1)
+        s = strings.Replace(s, " ", "", -1)
+
+        // Decode the base64-encoded string.
+        b, err := base64.StdEncoding.DecodeString(s)
+        if err != nil {
+            return "", errors.New("atob: 不合法的base64字串")
+        }
+
+        return string(b), nil
+        })
+    _ = vm.Set("btoa", func(s string) string {
+        // 编码
+        return base64.StdEncoding.EncodeToString([]byte(s))
+        })
+    // 1.2新增结束
+
+    _ = seal.Set("inst", d)
+    _ = vm.Set("__dirname", "")
+    _ = vm.Set("seal", seal)
+```
+
+##### `ctx` 的内容
+
+```javascript
+//在github.com/sealdice/javascript/examples_ts/seal.d.ts中有完整内容
+// 成员
+ctx.group // 当前群信息(对象)
+ctx.player // 当前玩家数据(对象)
+ctx.endPoint // 接入点数据(对象)
+// 以上三个对象内容暂略
+ctx.isCurGroupBotOn // bool 
+ctx.isPrivate // bool 是否私聊
+ctx.privilegeLevel // int 权限等级 40邀请者 50管理 60群主 70信任 100master
+ctx.delegateText // string 代骰附加文本
+// 方法 (太长,懒.)
+chBindCur
+chBindCurGet
+chBindGet
+chBindGetList
+chExists
+chGet
+chLoad
+chNew
+chUnbind
+chUnbindCur
+chVarsClear
+chVarsGet
+chVarsNumGet
+chVarsUpdateTime
+loadGroupVars
+loadPlayerGlobalVars
+loadPlayerGroupVars,notice
+```
+
+###### `ctx.group` 的内容
+
+```js
+// 成员
+active
+groupId
+guildId
+groupName
+cocRuleIndex
+logCurName
+logOn
+recentDiceSendTime
+showGroupWelcome
+groupWelcomeMessage
+enteredTime
+inviteUserId
+// 方法
+extActive
+extClear
+extGetActive
+extInactive
+extInactiveByName
+getCharTemplate
+isActive
+playerGet
+```
+
+###### `ctx.player` 的内容
+
+```js
+// 成员
+name
+userId
+lastCommandTime
+autoSetNameTemplate
+// 方法
+getValueNameByAlias
+```
+
+###### `ctx.endPoint` 的内容
+
+```js
+// 成员
+baseInfo
+id
+nickname
+state
+userId
+groupNum
+cmdExecutedNum
+cmdExecutedLastTime
+onlineTotalTime
+platform
+enable
+// 方法
+adapterSetup
+refreshGroupNum
+setEnable
+unmarshalYAML
+```
+
+##### `msg` 的内容
+
+```js
+// 成员
+msg.time // int64 发送时间
+msg.messageType // string group群聊 private私聊
+msg.groupId // string 如果是群聊, 群号
+msg.guildId // string 服务器群组号，会在discord,kook,dodo等平台见到
+msg.sender // 发送者信息(对象)
+    sender.nickname
+    sender.userId
+msg.message
+msg.rawId // 原始信息ID, 用于撤回等
+msg.platform // 平台
+// 方法
+// (似乎目前没有?)
+```
+
+##### `cmdArgs` 的内容
+
+```js
+// 成员
+.command // string
+.args // []string
+.kwargs // []Kwarg
+.at // []AtInfo
+.rawArgs // string
+.amIBeMentioned // bool (为何要加一个Be?)
+.cleanArgs // string 一种格式化后的参数，也就是中间所有分隔符都用一个空格替代
+.specialExecuteTimes // 特殊的执行次数，对应 3# 这种
+// 方法
+.isArgEqual(n, ss...) // 返回bool, 检查第n个参数是否在ss中
+.eatPrefixWith(ss...) // 似乎是从cleanArgs中去除ss中第一个匹配的前缀
+.chopPrefixToArgsWith(ss...) // 不懂
+.getArgN(n) // -> string
+.getKwarg(str) // -> Kwarg 如果有名为str的flag,返回对象,否则返回null/undefined(不确定)
+.getRestArgsFrom(n) // -> string 获取从第n个参数之后的所有参数, 用空格拼接成一个字符串
+```
+
+##### ChangeLog
+
+| 版本  | 日期  | 作者  | 内容  |
+| --- | --- | --- | --- |
+| v1.2 | 2023-04-08 | JohNSoN | 补充seal对象的两个方法 |
+| v1.1 | 2023-04-08 | JohNSoN | 补充部分内容 |
+| v1.0 | 2023-04-08 | 不学会go不改名(划掉)流溪 | 为社区贡献者欢呼的初始发布! |
 
 
 
