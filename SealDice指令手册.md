@@ -4865,10 +4865,10 @@ cmd.solve = (ctx,msg,cmdArgs) => {
 } 
 ```
 
-下面是部分api的说明（不完全版）：
+下面是api的说明（完全了吧......应该？）：
 
 ```javascript
-//被注释掉的是可以提供的，但是在源码中被注释。  
+//被注释掉的api是可以提供的，但是在源码中被注释。  
 //seal.setVarInt(ctx, `$XXX`, valueToSet) //`$XXX`即rollvm（初阶豹语）中的变量，其会将$XXX的值设定为int类型的valueToSet。  
 //seal.setVarStr(ctx, `$XXX`, valueToSet) //同上，区别是设定的为str类型的valueToSet。  
 seal.replyGroup(ctx, msg, something) //向收到指令的群中发送something。  
