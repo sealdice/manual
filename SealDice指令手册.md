@@ -4906,177 +4906,109 @@ seal.atob(base64String) //返回被解码的base64编码
 seal.btoa(string) //将string编码为base64并返回
 ```
 
-下面是dice_jsvm.go的一些关于js api的内容：
+##### 部分api使用示例
 
-```go
-// 初始化
-loop.Run(func(vm *goja.Runtime) {
-    vm.SetFieldNameMapper(goja.TagFieldNameMapper("jsbind", true))
+> 声明和注册扩展的代码部分已省略。
 
-    // console 模块
-    console.Enable(vm)
+###### 1: replyGroup, replyPerson, replyToSender:
 
-    // require 模块
-    d.JsRequire = reg.Enable(vm)
+```js
+//在私聊触发replyGroup不会回复
+seal.replyGroup(ctx, msg, 'something'); //触发者会收到"something"的回复
+seal.replyPerson(ctx, msg, 'something'); //触发者会收到"something"的私聊回复
+seal.replyToSender(ctx, msg, 'something'); //触发者会收到"something"的回复
+```
 
-    seal := vm.NewObject()
-    //seal.Set("setVarInt", VarSetValueInt64)
-    //seal.Set("setVarStr", VarSetValueStr)
+###### 2: memberBan, memberKick
 
-    vars := vm.NewObject()
-    _ = seal.Set("vars", vars)
-    //vars.Set("varGet", VarGetValue)
-    //vars.Set("varSet", VarSetValue)
-    _ = vars.Set("intGet", VarGetValueInt64)
-    _ = vars.Set("intSet", VarSetValueInt64)
-    _ = vars.Set("strGet", VarGetValueStr)
-    _ = vars.Set("strSet", VarSetValueStr)
+> 是否保留待议
 
-    ext := vm.NewObject()
-    _ = seal.Set("ext", ext)
-    _ = ext.Set("newCmdItemInfo", func() *CmdItemInfo {
-        return &CmdItemInfo{IsJsSolveFunc: true}
-        })
-    _ = ext.Set("newCmdExecuteResult", func(solved bool) CmdExecuteResult {
-        return CmdExecuteResult{
-            Matched: true,
-            Solved:  solved,
-            }
-    })
-    _ = ext.Set("new", func(name, author, version string) *ExtInfo {
-        return &ExtInfo{Name: name, Author: author, Version: version,
-            GetDescText: func(i *ExtInfo) string {
-                return GetExtensionDesc(i)
-                },
-            AutoActive: true,
-            IsJsExt:    true,
-            Brief:      "一个JS自定义扩展",
-            CmdMap:     CmdMapCls{},
-        }
-    })
-    _ = ext.Set("find", func(name string) *ExtInfo {
-        return d.ExtFind(name)
-    })
-    _ = ext.Set("register", func(ei *ExtInfo) {
-        if d.ExtFind(ei.Name) != nil {
-            panic("扩展<" + ei.Name + ">已被注册")
-        }
+```js
+//注意这些似乎只能在WQ协议上实现;
+seal.memberBan(ctx, groupID, userID, dur) //将群为groupID，userid为userID的人封禁dur（单位未知）
+seal.memberKick(ctx, groupID, userID) ////将群为groupID，userid为userID的人踢出那个群
+```
 
-        d.RegisterExtension(ei)
-        if ei.OnLoad != nil {
-            ei.OnLoad()
-        }
-        d.ApplyExtDefaultSettings()
-        for _, i := range d.ImSession.ServiceAtNew {
-            i.ExtActive(ei)
-        }
-    })
+###### 3: format, formatTmpl
 
-        // COC规则自定义
-    coc := vm.NewObject()
-    _ = coc.Set("newRule", func() *CocRuleInfo {
-        return &CocRuleInfo{}
-    })
-    _ = coc.Set("newRuleCheckResult", func() *CocRuleCheckRet {
-        return &CocRuleCheckRet{}
-    })
-    _ = coc.Set("registerRule", func(rule *CocRuleInfo) bool {
-        return d.CocExtraRulesAdd(rule)
-    })
-    _ = seal.Set("coc", coc)
+```js
+//注意format不会自动reply，而是return，所以请套一层reply
+seal.replyToSender(ctx, msg, seal.format(`{$t玩家}的人品为：{$t人品}`))
+//{$t人品}是一个rollvm变量，其值等于.jrrp出的数值
+//回复：
+//群主的人品为：87
+seal.replyToSender(ctx, msg, seal.formatTmpl(unknown))
+//这里等大佬来了再研究
+```
 
-    deck := vm.NewObject()
-    _ = deck.Set("draw", func(ctx *MsgContext, deckName string, isShuffle bool) map[string]interface{} {
-        exists, result, err := deckDraw(ctx, deckName, isShuffle)
-        var errText string
-        if err != nil {
-            errText = err.Error()
-        }
-        return map[string]interface{}{
-            "exists": exists,
-            "err":    errText,
-            "result": result,
-        }
-    })
-    _ = deck.Set("reload", func() {
-        DeckReload(d)
-    })
-    _ = seal.Set("deck", deck)
+###### 4: getCtxProxyFirst, getCtxProxyAtPos
 
-    _ = seal.Set("replyGroup", ReplyGroup)
-    _ = seal.Set("replyPerson", ReplyPerson)
-    _ = seal.Set("replyToSender", ReplyToSender)
-    _ = seal.Set("memberBan", MemberBan)
-    _ = seal.Set("memberKick", MemberKick)
-    _ = seal.Set("format", DiceFormat)
-    _ = seal.Set("formatTmpl", DiceFormatTmpl)
-    _ = seal.Set("getCtxProxyFirst", GetCtxProxyFirst)
+```js
+cmd,solve = (ctx, msg, cmdArgs) => {
+    let ctxFirst = seal.getCtxProxyFirst(ctx, cmdArgs)
+    seal.replyToSender(ctx, msg, ctxFirst.player,name)
+}
+ext.cmdMap['test'] = cmd
+//输入：.test @A @B
+//返回：A的名称。这里其实获取的是A玩家的ctx，具体见文末的ctx数据结构。
+cmd,solve = (ctx, msg, cmdArgs) => {
+    let ctx3 = seal.getCtxProxyAtPos(ctx, 3)
+    seal.replyToSender(ctx, msg, ctx3.player,name)
+}
+ext.cmdMap['test'] = cmd
+//输入：.test @A @B @C
+//返回：C（第三个被@的人）的名称。这里其实获取的是C玩家的ctx，具体见文末的ctx数据结构。
+```
 
-    // 1.2新增
-    _ = seal.Set("newMessage", func() *Message {
-        return &Message{}
-    })
-    _ = seal.Set("createTempCtx", CreateTempCtx)
-    _ = seal.Set("applyPlayerGroupCardByTemplate", func(ctx *MsgContext, tmpl string) string {
-        if tmpl != "" {
-            ctx.Player.AutoSetNameTemplate = tmpl
-        }
-        if ctx.Player.AutoSetNameTemplate != "" {
-            text, _ := SetPlayerGroupCardByTemplate(ctx, ctx.Player.AutoSetNameTemplate)
-            return text
-        }
-        return ""
-    })
-    gameSystem := vm.NewObject()
-    _ = gameSystem.Set("newTemplate", func(data string) error {
-        tmpl := &GameSystemTemplate{}
-        err := json.Unmarshal([]byte(data), tmpl)
-        if err != nil {
-            return errors.New("解析失败:" + err.Error())
-        }
-        ret := d.GameSystemTemplateAdd(tmpl)
-        if !ret {
-            return errors.New("已存在同名模板")
-        }
-        return nil
-        })
-    _ = gameSystem.Set("newTemplateByYaml", func(data string) error {
-        tmpl := &GameSystemTemplate{}
-        err := yaml.Unmarshal([]byte(data), tmpl)
-        if err != nil {
-            return errors.New("解析失败:" + err.Error())
-        }
-        ret := d.GameSystemTemplateAdd(tmpl)
-        if !ret {
-            return errors.New("已存在同名模板")
-        }
-        return nil
-    })
-    _ = seal.Set("gameSystem", gameSystem)
-    _ = seal.Set("getCtxProxyAtPos", GetCtxProxyAtPos)
+###### 5: vars
 
-    _ = vm.Set("atob", func(s string) (string, error) {
-        // Remove data URI scheme and any whitespace from the string.
-        s = strings.Replace(s, "data:text/plain;base64,", "", -1)
-        s = strings.Replace(s, " ", "", -1)
+```js
+//要看懂这里你可能需要学习一下初阶豹语
+seal.vars.intSet(ctx, `$m今日打胶次数`， 8) //将触发者的该个人变量设置为8
+seal.vars.intGet(ctx, `$m今日打胶次数`) //返回 8
+seal.vars.strSet(ctx, `$g群友发癫语录`, `一条也没有，快来发癫吧`) //将群内的该群组变量设置为“一条也没有，快来发癫吧！”
+seal.vars.intSet(ctx, `$g群友发癫语录`) //返回 一条也没有，快来发癫吧
+```
 
-        // Decode the base64-encoded string.
-        b, err := base64.StdEncoding.DecodeString(s)
-        if err != nil {
-            return "", errors.New("atob: 不合法的base64字串")
-        }
+###### 6: ext
 
-        return string(b), nil
-        })
-    _ = vm.Set("btoa", func(s string) string {
-        // 编码
-        return base64.StdEncoding.EncodeToString([]byte(s))
-        })
-    // 1.2新增结束
+```js
+//用于注册扩展和定义指令的api，已有详细示例，不多赘述
+```
 
-    _ = seal.Set("inst", d)
-    _ = vm.Set("__dirname", "")
-    _ = vm.Set("seal", seal)
+###### 7: coc
+
+```js
+//用于创建coc村规的api，已有详细示例，不多赘述
+```
+
+###### 8: deck
+
+```js
+seal.deck.draw(ctx, `煤气灯`, false) //返回 放回抽取牌堆“煤气灯”的结果
+seal.deck.draw(ctx, `煤气灯`, true) //返回 不放回抽取牌堆“煤气灯”的结果
+seal.deck.reload() //重新加载牌堆
+```
+
+###### 9: 自定义trpg规则相关
+
+```js
+//这里实在不知道如何举例了
+seal.gameSystem.newTemplate(string) //从json解析新的游戏规则。  
+seal.gameSystem.newTemplateByYaml(string) //从yaml解析新的游戏规则。
+seal.applyPlayerGroupCardByTemplate(ctx, tmpl) // 设定当前ctx玩家的自动名片格式
+```
+
+###### 10: 其他
+
+```js
+seal.newMessage() //返回一个空白的Message对象, 结构与收到消息的msg相同
+seal.createTempCtx(endpoint, msg) // 制作一个ctx, 需要msg.MessageType和msg.Sender.UserId
+seal.atob(base64String) //返回被解码的base64编码  
+seal.btoa(string) //将string编码为base64并返回
+//预计在1.2.5上线：
+seal.getEndPoints() //返回骰子（应该？）的EndPoints
+seal.getVersion() //返回一个map，键值为version和versionCode
 ```
 
 ##### `ctx` 的内容
