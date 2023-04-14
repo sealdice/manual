@@ -483,7 +483,7 @@ sealdice-core --address=0.0.0.0:3212 -m
 
 ### 快速上手
 
-![](d:\mlsstu\Desktop\sealdice-manual-master\static\manual.assets\SealdiceRoll.png)
+![SealdiceRoll.png](static/manual.assets/SealdiceRoll.png)
 
 
 
