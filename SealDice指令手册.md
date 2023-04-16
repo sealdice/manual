@@ -4612,7 +4612,51 @@ function akAdd(ctx, msg, ext, option) {
 
 #### 9.编写暗骰指令
 
-API似乎未开放。跳过
+如下：  
+```js
+// ==UserScript==
+// @name         示例:编写暗骰指令
+// @author       流溪
+// @version      1.0.0
+// @description  暗骰，格式.hide 原因
+// @timestamp    1671540835
+// 2022-12-20
+// @license      Apache-2
+// @homepageURL  https://github.com/sealdice/javascript
+// ==/UserScript==
+ext = seal.ext.find('hide');
+if (!ext){
+    ext = seal.ext.new('hide','流溪','0.0.1');
+    seal.ext.register(ext);
+}
+const cmdHide = seal.ext.newCmdItemInfo;
+cmdHide.name = 'hide';
+cmdHide.help = '暗骰，使用 .hide 面数 暗骰';
+cmdHide.solve = (ctx, msg, cmdArgs) => {
+    if (msg.messageType !== 'group'){
+        seal.replyToSender(ctx, msg, '暗骰只能在群内触发');
+        return seal.ext.newCmdExecuteResult(true);
+    }
+    function rd(x){
+        //这里写的时候有点不清醒了，感觉是对的，如果不对请拷打我
+        return Math.round(Math.random() * (x - 1) + 1);
+    }
+    let x = cmdArgs.getArgN(1);
+    if (x === 'help'){
+        return seal.ext.newCmdExecuteResult(true).showhelp = true;
+    } else if (isNaN(Number(x))){
+        //我知道这里有更好的判断是否为数字的方法但是我不会.jpg
+        seal.replyToSender(ctx, msg, `骰子面数应是数字`);
+        return seal.ext.newCmdExecuteResult(true);
+    } else {
+        //这就是暗骰api哒！
+        seal.replyPerson(ctx, msg, `你在群${msg.groupId}的掷骰结果为：${rd(x)}`);
+        return seal.ext.newCmdExecuteResult(true);
+    }
+}
+ext.cmdMap['hide'] = cmdHide;
+```  
+可以看到使用`seal.replyPerson`做到暗骰的效果。
 
 #### 10.编写代骰指令
 
