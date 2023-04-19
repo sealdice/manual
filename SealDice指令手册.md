@@ -4937,17 +4937,17 @@ seal.memberKick(ctx, groupID, userID)  //将指定群的指定用户踢出(似�
 seal.format(ctx, something) //将something经过一层rollvm转译并返回，注意需要配合replyToSender才能发送给触发者！  
 seal.formatTmpl(ctx, something) //调用自定义文案something  
 seal.getCtxProxyFirst(ctx, cmdArgs)  //获取被at的第一个人, 等价于getCtxProxyAtPos(ctx, 0)  
-seal.vars.intGet(ctx, `$XXX`) //返回int类型的触发者的该变量的值（之所以会有这么奇怪的说法是因为rollvm的“个人变量”机制）。  
+seal.vars.intGet(ctx, `$XXX`) //返回一个数组，其为[int类型的触发者的该变量的值,bool]当strGet一个int或intGet一个str时bool为false，若一切正常则为true。（之所以会有这么奇怪的说法是因为rollvm的“个人变量”机制）。  
 seal.vars.intSet(ctx, `$XXX`, valueToSet) //`$XXX`即rollvm（初阶豹语）中的变量，其会将$XXX的值设定为int类型的valueToSet。  
-seal.vars.strGet(ctx, `$XXX`) //返回str类型的触发者的该变量的值（之所以会有这么奇怪的说法是因为rollvm的“个人变量”机制。  
+seal.vars.strGet(ctx, `$XXX`) //返回一个数组，其为[str类型的触发者的该变量的值,bool]（之所以会有这么奇怪的说法是因为rollvm的“个人变量”机制），当strGet一个int或intGet一个str时bool为false，如果一切正常则为true。  
 seal.vars.strSet(ctx, `$XXX`, valueToSet) //`$XXX`即rollvm（初阶豹语）中的变量，其会将$XXX的值设定为str类型的valueToSet。  
 //seal.vars.varSet(ctx, `$XXX`, valueToSet) //可能是根据数据类型自动推断int或str？
 //seal.vars.varGet(ctx, `$XXX`) //同上
 seal.ext.newCmdItemInfo() //用来定义新的指令；没有参数，个人觉得可以视其为类（class）。  
 seal.ext.newCmdExecuteResult(bool) //用于判断指令执行结果，true为成功，false为失败。  
-seal.ext.new(extName, extAuthor, Version) //用于建立一个名为extName，作者为extAurhot，版本为Version的扩展。注意，extName， extAuthor和Version均为字符串。  
+seal.ext.new(extName, extAuthor, Version) //用于建立一个名为extName，作者为extAuthor，版本为Version的扩展。注意，extName， extAuthor和Version均为字符串。  
 seal.ext.find(extName) //用于查找名为extname的扩展，若存在则返回true，否则返回false。  
-seal.ext.register(newExt) //将扩展newExt注册到系统中。注意newExt是seal.ext.new的返回值，将register视为new是错误的。  
+seal.ext.register(newExt) //将扩展newExt注册到系统中。注意newExt是seal.ext.new的返回值，将register视为seal.ext.new()是错误的。  
 seal.coc.newRule() //用来创建自定义coc规则，github.com/sealdice/javascript/examples中已有详细例子，不多赘述。  
 seal.coc.newRuleCheckResult() //同上，不多赘述。  
 seal.coc.registerRule(rule) //同上，不多赘述。  
@@ -5023,9 +5023,9 @@ ext.cmdMap['test'] = cmd
 ```js
 //要看懂这里你可能需要学习一下初阶豹语
 seal.vars.intSet(ctx, `$m今日打胶次数`， 8) //将触发者的该个人变量设置为8
-seal.vars.intGet(ctx, `$m今日打胶次数`) //返回 8
+seal.vars.intGet(ctx, `$m今日打胶次数`) //返回 [8,true]
 seal.vars.strSet(ctx, `$g群友发癫语录`, `一条也没有，快来发癫吧`) //将群内的该群组变量设置为“一条也没有，快来发癫吧！”
-seal.vars.intSet(ctx, `$g群友发癫语录`) //返回 一条也没有，快来发癫吧
+seal.vars.strGet(ctx, `$g群友发癫语录`) //返回 ["一条也没有，快来发癫吧",true]
 ```
 
 ###### 6: ext
