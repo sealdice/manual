@@ -5002,14 +5002,14 @@ seal.replyToSender(ctx, msg, seal.formatTmpl(unknown))
 ###### 4: getCtxProxyFirst, getCtxProxyAtPos
 
 ```js
-cmd,solve = (ctx, msg, cmdArgs) => {
+cmd.solve = (ctx, msg, cmdArgs) => {
     let ctxFirst = seal.getCtxProxyFirst(ctx, cmdArgs)
     seal.replyToSender(ctx, msg, ctxFirst.player,name)
 }
 ext.cmdMap['test'] = cmd
 //输入：.test @A @B
 //返回：A的名称。这里其实获取的是A玩家的ctx，具体见文末的ctx数据结构。
-cmd,solve = (ctx, msg, cmdArgs) => {
+cmd.solve = (ctx, msg, cmdArgs) => {
     let ctx3 = seal.getCtxProxyAtPos(ctx, 3)
     seal.replyToSender(ctx, msg, ctx3.player,name)
 }
