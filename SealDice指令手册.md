@@ -4061,8 +4061,8 @@ JS扩展的示例：
 
 /*
 这里是海豹支持的js脚本范例
-海豹使用的js脚本引擎为goja，对js的支持程度为：
-基本支持es6，能使用promise，但不支持async/await，同时不支持generator(因此不能做async/await的polyfill)
+海豹使用的js脚本引擎为goja.
+在几次更新后，goja支持了ES6的基本上全部特性，包括async/await，promise和generator.
 
 特别注意一点是js引擎的整型为32位，请小心溢出问题。
 
@@ -4715,10 +4715,7 @@ ext.cmdMap['catch'] = cmdCatch;
 主要使用[Fetch API](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API)进行网络请求，详细文档见链接。
 
 ```js
-// 请注意，不要使用async/await
-// 因为目前版本的goja既不支持ES2017标准的async/await语法
-// 也不支持es6标准的generator，所以polyfill无法工作
-// 虽然我也不喜欢promise这个套娃语法，但目前这能这么写了
+// 你可以使用async/await和generator来重写这段代码，欢迎pr
 // 访问网址
 fetch('https://api-music.imsyy.top/cloudsearch?keywords=稻香').then((resp) => {
   // 在返回对象的基础上，将文本流作为json解析
@@ -4918,8 +4915,8 @@ if (!seal.ext.find('xxx')){
 > 其中ctx为信息的MsgContext，msg为信息的Message，一般会在定义指令函数时就声明，如:
 
 ```javascript
-cmd.solve = (ctx,msg,cmdArgs) => {
-    somefunction;
+cmd.solve = (ctx, msg, cmdArgs) => {
+    someFunction;
 } 
 ```
 
@@ -5064,7 +5061,6 @@ seal.newMessage() //返回一个空白的Message对象, 结构与收到消息的
 seal.createTempCtx(endpoint, msg) // 制作一个ctx, 需要msg.MessageType和msg.Sender.UserId
 seal.atob(base64String) //返回被解码的base64编码  
 seal.btoa(string) //将string编码为base64并返回
-//预计在1.2.5上线：
 seal.getEndPoints() //返回骰子（应该？）的EndPoints
 seal.getVersion() //返回一个map，键值为version和versionCode
 ```
