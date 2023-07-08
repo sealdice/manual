@@ -4612,7 +4612,51 @@ function akAdd(ctx, msg, ext, option) {
 
 #### 9.编写暗骰指令
 
-API似乎未开放。跳过
+如下：  
+```js
+// ==UserScript==
+// @name         示例:编写暗骰指令
+// @author       流溪
+// @version      1.0.0
+// @description  暗骰，格式.hide 原因
+// @timestamp    1671540835
+// 2022-12-20
+// @license      Apache-2
+// @homepageURL  https://github.com/sealdice/javascript
+// ==/UserScript==
+ext = seal.ext.find('hide');
+if (!ext){
+    ext = seal.ext.new('hide','流溪','0.0.1');
+    seal.ext.register(ext);
+}
+const cmdHide = seal.ext.newCmdItemInfo;
+cmdHide.name = 'hide';
+cmdHide.help = '暗骰，使用 .hide 面数 暗骰';
+cmdHide.solve = (ctx, msg, cmdArgs) => {
+    if (msg.messageType !== 'group'){
+        seal.replyToSender(ctx, msg, '暗骰只能在群内触发');
+        return seal.ext.newCmdExecuteResult(true);
+    }
+    function rd(x){
+        //这里写的时候有点不清醒了，感觉是对的，如果不对请拷打我
+        return Math.round(Math.random() * (x - 1) + 1);
+    }
+    let x = cmdArgs.getArgN(1);
+    if (x === 'help'){
+        return seal.ext.newCmdExecuteResult(true).showhelp = true;
+    } else if (isNaN(Number(x))){
+        //我知道这里有更好的判断是否为数字的方法但是我不会.jpg
+        seal.replyToSender(ctx, msg, `骰子面数应是数字`);
+        return seal.ext.newCmdExecuteResult(true);
+    } else {
+        //这就是暗骰api哒！
+        seal.replyPerson(ctx, msg, `你在群${msg.groupId}的掷骰结果为：${rd(x)}`);
+        return seal.ext.newCmdExecuteResult(true);
+    }
+}
+ext.cmdMap['hide'] = cmdHide;
+```  
+可以看到使用`seal.replyPerson`做到暗骰的效果。
 
 #### 10.编写代骰指令
 
@@ -4893,17 +4937,17 @@ seal.memberKick(ctx, groupID, userID)  //将指定群的指定用户踢出(似�
 seal.format(ctx, something) //将something经过一层rollvm转译并返回，注意需要配合replyToSender才能发送给触发者！  
 seal.formatTmpl(ctx, something) //调用自定义文案something  
 seal.getCtxProxyFirst(ctx, cmdArgs)  //获取被at的第一个人, 等价于getCtxProxyAtPos(ctx, 0)  
-seal.vars.intGet(ctx, `$XXX`) //返回int类型的触发者的该变量的值（之所以会有这么奇怪的说法是因为rollvm的“个人变量”机制）。  
+seal.vars.intGet(ctx, `$XXX`) //返回一个数组，其为[int类型的触发者的该变量的值,bool]当strGet一个int或intGet一个str时bool为false，若一切正常则为true。（之所以会有这么奇怪的说法是因为rollvm的“个人变量”机制）。  
 seal.vars.intSet(ctx, `$XXX`, valueToSet) //`$XXX`即rollvm（初阶豹语）中的变量，其会将$XXX的值设定为int类型的valueToSet。  
-seal.vars.strGet(ctx, `$XXX`) //返回str类型的触发者的该变量的值（之所以会有这么奇怪的说法是因为rollvm的“个人变量”机制。  
+seal.vars.strGet(ctx, `$XXX`) //返回一个数组，其为[str类型的触发者的该变量的值,bool]（之所以会有这么奇怪的说法是因为rollvm的“个人变量”机制），当strGet一个int或intGet一个str时bool为false，如果一切正常则为true。  
 seal.vars.strSet(ctx, `$XXX`, valueToSet) //`$XXX`即rollvm（初阶豹语）中的变量，其会将$XXX的值设定为str类型的valueToSet。  
 //seal.vars.varSet(ctx, `$XXX`, valueToSet) //可能是根据数据类型自动推断int或str？
 //seal.vars.varGet(ctx, `$XXX`) //同上
 seal.ext.newCmdItemInfo() //用来定义新的指令；没有参数，个人觉得可以视其为类（class）。  
 seal.ext.newCmdExecuteResult(bool) //用于判断指令执行结果，true为成功，false为失败。  
-seal.ext.new(extName, extAuthor, Version) //用于建立一个名为extName，作者为extAurhot，版本为Version的扩展。注意，extName， extAuthor和Version均为字符串。  
+seal.ext.new(extName, extAuthor, Version) //用于建立一个名为extName，作者为extAuthor，版本为Version的扩展。注意，extName， extAuthor和Version均为字符串。  
 seal.ext.find(extName) //用于查找名为extname的扩展，若存在则返回true，否则返回false。  
-seal.ext.register(newExt) //将扩展newExt注册到系统中。注意newExt是seal.ext.new的返回值，将register视为new是错误的。  
+seal.ext.register(newExt) //将扩展newExt注册到系统中。注意newExt是seal.ext.new的返回值，将register视为seal.ext.new()是错误的。  
 seal.coc.newRule() //用来创建自定义coc规则，github.com/sealdice/javascript/examples中已有详细例子，不多赘述。  
 seal.coc.newRuleCheckResult() //同上，不多赘述。  
 seal.coc.registerRule(rule) //同上，不多赘述。  
@@ -4958,14 +5002,14 @@ seal.replyToSender(ctx, msg, seal.formatTmpl(unknown))
 ###### 4: getCtxProxyFirst, getCtxProxyAtPos
 
 ```js
-cmd,solve = (ctx, msg, cmdArgs) => {
+cmd.solve = (ctx, msg, cmdArgs) => {
     let ctxFirst = seal.getCtxProxyFirst(ctx, cmdArgs)
     seal.replyToSender(ctx, msg, ctxFirst.player,name)
 }
 ext.cmdMap['test'] = cmd
 //输入：.test @A @B
 //返回：A的名称。这里其实获取的是A玩家的ctx，具体见文末的ctx数据结构。
-cmd,solve = (ctx, msg, cmdArgs) => {
+cmd.solve = (ctx, msg, cmdArgs) => {
     let ctx3 = seal.getCtxProxyAtPos(ctx, 3)
     seal.replyToSender(ctx, msg, ctx3.player,name)
 }
@@ -4979,9 +5023,9 @@ ext.cmdMap['test'] = cmd
 ```js
 //要看懂这里你可能需要学习一下初阶豹语
 seal.vars.intSet(ctx, `$m今日打胶次数`， 8) //将触发者的该个人变量设置为8
-seal.vars.intGet(ctx, `$m今日打胶次数`) //返回 8
+seal.vars.intGet(ctx, `$m今日打胶次数`) //返回 [8,true]
 seal.vars.strSet(ctx, `$g群友发癫语录`, `一条也没有，快来发癫吧`) //将群内的该群组变量设置为“一条也没有，快来发癫吧！”
-seal.vars.intSet(ctx, `$g群友发癫语录`) //返回 一条也没有，快来发癫吧
+seal.vars.strGet(ctx, `$g群友发癫语录`) //返回 ["一条也没有，快来发癫吧",true]
 ```
 
 ###### 6: ext
