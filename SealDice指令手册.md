@@ -3646,7 +3646,7 @@ D:\Uso\tmp\sealdice-core 和每个人解压seal程序的位置有关，是可以
         "对于带图的牌堆,可以看看下面的'建议的格式'一节。"
         "当然的，同样利用CQ码的语音、表情等等都可以这样",
         "至于CQ码的详细内容，见 https://docs.go-cqhttp.org/cqcode "
-    ]
+	]
 }
 ```
 
