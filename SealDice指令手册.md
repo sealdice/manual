@@ -2962,19 +2962,13 @@ http://localhost:3211/
 
 ###### Linux下搭建
 
-首先确定你有java环境。
-
-去[qsign的release](https://github.com/fuqiuluo/unidbg-fetch-qsign)里下载最新的zip，然后解压，cd进解压目录。
-
-直接运行 `bash bin/unidbg-fetch-qsign --basePath=txlib/8.9.68`。
-
-如果不知道java是啥，建议别用linux了，天涯何处无芳草:)
+[这里](https://github.com/fuqiuluo/unidbg-fetch-qsign/wiki/%E9%83%A8%E7%BD%B2%E5%9C%A8Linux)有完整的教程。
 
 ###### Mac下搭建
 
 又双叒叕要感谢社区了（
 
-来自另一位天才般的程序员大人的作品。
+来自一位天才般的程序员大人的作品。
 
 [GitHub - Verplitic/AutoQSignForMac: 为 macOS 构建的 QSign 一键包，受到 Xiangze-Li/qsign-gocq-deploy-pack 和 rhwong/unidbg-fetch-qsign-onekey 的启发。](https://github.com/Verplitic/AutoQSignForMac)
 
