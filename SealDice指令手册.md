@@ -2927,7 +2927,7 @@ http://localhost:3211/
 
 签名服务器，即[qsign](https://github.com/fuqiuluo/unidbg-fetch-qsign)，是用来绕过某大厂封锁的有效手段，对code45/235/237有奇效。
 
-qsign是海豹1.3.0的最新特性，请旧版本用户升级以体验新功能。
+对qsign的支持是海豹1.3.0的最新特性，请旧版本用户升级以体验新功能。
 
 ##### 我需要怎么做？
 
